@@ -204,7 +204,6 @@ export default function App() {
   const [isLoading, setIsLoading] = useState(false);
   
   // Settings state
-  const [showSettings, setShowSettings] = useState(false);
   const [includeStories, setIncludeStories] = useState(false);
   const [strictMode, setStrictMode] = useState(false);
 
@@ -291,11 +290,6 @@ export default function App() {
   const componentSpecificStyles = `
   * {
     box-sizing: border-box;
-  }
-  @media (max-width: 768px) {
-    .main-heading {
-      font-size: 1.15rem !important;
-    }
   }
   @keyframes slideInFromBottom {
     from {
@@ -488,39 +482,75 @@ export default function App() {
       <div style={pageStyle}>
         <div style={contentWrapperStyle}>
           <div style={cardStyle}>
-            <div style={{ position: "relative" }}>
-              <h1 style={headingStyle} className="main-heading">
-                {strictMode ? "Did you actually em dash?" : "Did you em dash?"}
-              </h1>
-              <button
-                onClick={() => setShowSettings(true)}
-                style={{
-                  position: "absolute",
-                  top: "-0.25rem",
-                  right: "-0.5rem",
-                  background: "none",
-                  border: "none",
-                  color: themeColors.mutedForeground,
-                  fontSize: "0.75rem",
-                  cursor: "pointer",
-                  padding: "0.25rem",
-                  textDecoration: "underline",
-                }}
-              >
-                settings
-              </button>
-            </div>
+            <h1 style={headingStyle} className="main-heading">
+              {strictMode ? "Did you actually em dash?" : "Did you em dash?"}
+            </h1>
             <form onSubmit={handleUsernameSubmit}>
               <div style={formGroupStyle}>
-                <input
-                  id="usernameInput"
-                  type="text"
-                  value={username}
-                  onChange={handleUsernameChange}
-                  placeholder="Hacker News username"
-                  style={inputStyle}
-                  disabled={isLoading}
-                />
+                <div style={{
+                  position: "relative",
+                  display: "flex",
+                  alignItems: "center",
+                }}>
+                  <input
+                    id="usernameInput"
+                    type="text"
+                    value={username}
+                    onChange={handleUsernameChange}
+                    placeholder="Hacker News username"
+                    style={{
+                      ...inputStyle,
+                      paddingRight: "6rem", // Make room for badges
+                    }}
+                    disabled={isLoading}
+                  />
+                  <div style={{
+                    position: "absolute",
+                    right: "0.5rem",
+                    display: "flex",
+                    gap: "0.25rem",
+                    alignItems: "center",
+                  }}>
+                    <button
+                      type="button"
+                      onClick={() => setStrictMode(!strictMode)}
+                      style={{
+                        fontSize: "0.75rem",
+                        padding: "0.25rem 0.5rem",
+                        borderRadius: "0.75rem",
+                        border: "none",
+                        cursor: "pointer",
+                        fontWeight: "500",
+                        backgroundColor: strictMode ? themeColors.primary : themeColors.mutedForeground,
+                        color: strictMode ? themeColors.primaryForeground : themeColors.background,
+                        opacity: strictMode ? 1 : 0.6,
+                        transition: "all 0.2s ease",
+                      }}
+                      disabled={isLoading}
+                    >
+                      strict
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setIncludeStories(!includeStories)}
+                      style={{
+                        fontSize: "0.75rem",
+                        padding: "0.25rem 0.5rem",
+                        borderRadius: "0.75rem",
+                        border: "none",
+                        cursor: "pointer",
+                        fontWeight: "500",
+                        backgroundColor: includeStories ? themeColors.primary : themeColors.mutedForeground,
+                        color: includeStories ? themeColors.primaryForeground : themeColors.background,
+                        opacity: includeStories ? 1 : 0.6,
+                        transition: "all 0.2s ease",
+                      }}
+                      disabled={isLoading}
+                    >
+                      +titles
+                    </button>
+                  </div>
+                </div>
               </div>
               {usernameError && (
                 <p style={errorMessageStyle}>{usernameError}</p>
@@ -700,116 +730,6 @@ export default function App() {
             </div>
           )}
         </div>
-        
-        {/* Settings Modal */}
-        {showSettings && (
-          <div
-            style={{
-              position: "fixed",
-              top: "0",
-              left: "0",
-              right: "0",
-              bottom: "0",
-              backgroundColor: "rgba(0, 0, 0, 0.5)",
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              zIndex: 1000,
-            }}
-            onClick={() => setShowSettings(false)}
-          >
-            <div
-              style={{
-                backgroundColor: themeColors.card,
-                padding: "1.5rem",
-                borderRadius: borderRadius,
-                boxShadow: shadows.md,
-                width: "90%",
-                maxWidth: "400px",
-                border: `1px solid ${themeColors.border}`,
-              }}
-              onClick={(e) => e.stopPropagation()}
-            >
-              <h2 style={{
-                margin: "0 0 1rem 0",
-                fontSize: "1.25rem",
-                fontWeight: "600",
-                color: themeColors.cardForeground,
-              }}>
-                Search Settings
-              </h2>
-              
-              <div style={{ marginBottom: "1rem" }}>
-                <label style={{
-                  display: "flex",
-                  alignItems: "center",
-                  gap: "0.5rem",
-                  cursor: "pointer",
-                  fontSize: "0.875rem",
-                  color: themeColors.cardForeground,
-                }}>
-                  <input
-                    type="checkbox"
-                    checked={includeStories}
-                    onChange={(e) => setIncludeStories(e.target.checked)}
-                    style={{ marginRight: "0.25rem" }}
-                  />
-                  Include story titles
-                </label>
-                <p style={{
-                  fontSize: "0.75rem",
-                  color: themeColors.mutedForeground,
-                  margin: "0.25rem 0 0 1.5rem",
-                }}>
-                  Search story titles in addition to comments
-                </p>
-              </div>
-              
-              <div style={{ marginBottom: "1.5rem" }}>
-                <label style={{
-                  display: "flex",
-                  alignItems: "center",
-                  gap: "0.5rem",
-                  cursor: "pointer",
-                  fontSize: "0.875rem",
-                  color: themeColors.cardForeground,
-                }}>
-                  <input
-                    type="checkbox"
-                    checked={strictMode}
-                    onChange={(e) => setStrictMode(e.target.checked)}
-                    style={{ marginRight: "0.25rem" }}
-                  />
-                  Strict mode
-                </label>
-                <p style={{
-                  fontSize: "0.75rem",
-                  color: themeColors.mutedForeground,
-                  margin: "0.25rem 0 0 1.5rem",
-                }}>
-                  Only match true em dashes (—), not lazy dashes (--)
-                </p>
-              </div>
-              
-              <button
-                onClick={() => setShowSettings(false)}
-                style={{
-                  width: "100%",
-                  padding: "0.5rem 1rem",
-                  backgroundColor: themeColors.primary,
-                  color: themeColors.primaryForeground,
-                  border: "none",
-                  borderRadius: borderRadius,
-                  cursor: "pointer",
-                  fontSize: "0.875rem",
-                  fontWeight: "500",
-                }}
-              >
-                Close
-              </button>
-            </div>
-          </div>
-        )}
         
         {/* Spacer */}
         <div style={{ height: "3rem" }}></div>
