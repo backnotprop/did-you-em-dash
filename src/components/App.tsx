@@ -356,7 +356,10 @@ export default function App() {
 
   const handleUsernameSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
-    await performSearch(username);
+    // Small delay to ensure state updates from button clicks have taken effect
+    setTimeout(() => {
+      performSearch(username);
+    }, 0);
   };
 
   // Function to format date
@@ -619,7 +622,11 @@ export default function App() {
                   >
                     <button
                       type="button"
-                      onClick={() => setStrictMode(!strictMode)}
+                      onClick={() => {
+                        setStrictMode(!strictMode);
+                        // Refocus input to allow Enter key to submit form
+                        document.getElementById('usernameInput')?.focus();
+                      }}
                       style={{
                         fontSize: "0.75rem",
                         padding: "0.25rem 0.5rem",
@@ -642,7 +649,11 @@ export default function App() {
                     </button>
                     <button
                       type="button"
-                      onClick={() => setIncludeStories(!includeStories)}
+                      onClick={() => {
+                        setIncludeStories(!includeStories);
+                        // Refocus input to allow Enter key to submit form
+                        document.getElementById('usernameInput')?.focus();
+                      }}
                       style={{
                         fontSize: "0.75rem",
                         padding: "0.25rem 0.5rem",
