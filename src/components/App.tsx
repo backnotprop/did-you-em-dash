@@ -8,9 +8,10 @@ import type { ChangeEvent, FormEvent, CSSProperties } from "react";
 // --- API LOGIC ---
 
 /**
- * The regular expression to detect various forms of em and en dashes.
+ * Regular expressions for em dash detection
  */
-const EM_DASH_REGEX = /(--|––|——|–|—)/;
+const LOOSE_EM_DASH_REGEX = /(--|––|——|–|—)/; // Lazy dashes and real em dashes
+const STRICT_EM_DASH_REGEX = /—/; // Only true em dashes
 
 /**
  * Defines the structure of a Hacker News item that we care about.
@@ -45,11 +46,15 @@ export type ProgressCallback = (state: "retrieving" | "searching") => void;
  *
  * @param username The case-sensitive Hacker News username.
  * @param onProgress A callback function to report progress updates to the caller.
+ * @param includeStories Whether to search story titles in addition to comments.
+ * @param strictMode Whether to use strict em dash matching (true em dash only).
  * @returns A promise that resolves to the search result
  */
 export const searchUntilEmDash = async (
   username: string,
-  onProgress: ProgressCallback
+  onProgress: ProgressCallback,
+  includeStories: boolean = false,
+  strictMode: boolean = false
 ): Promise<SearchResult> => {
   const CONCURRENCY_LIMIT = 10;
   // Define the cutoff date. We only search for items *before* this timestamp.
@@ -100,13 +105,23 @@ export const searchUntilEmDash = async (
 
         const item: HackerNewsItem = await itemResponse.json();
 
-        // MODIFIED: Skip items that are deleted, invalid, OR created on/after the target date.
+        // Skip items that are deleted, invalid, OR created on/after the target date.
         if (!item || item.deleted || item.time >= TARGET_TIMESTAMP_S) {
           return;
         }
 
+        // Filter by item type based on includeStories setting
+        if (!includeStories && item.type !== "comment") {
+          return;
+        }
+        if (includeStories && item.type !== "comment" && item.type !== "story") {
+          return;
+        }
+
         const textToSearch = item.text || item.title || "";
-        if (EM_DASH_REGEX.test(textToSearch)) {
+        const emDashRegex = strictMode ? STRICT_EM_DASH_REGEX : LOOSE_EM_DASH_REGEX;
+        
+        if (emDashRegex.test(textToSearch)) {
           if (!foundEmDash) {
             // Only store the first found item
             foundEmDash = true;
@@ -187,6 +202,11 @@ export default function App() {
 
   const [progressState, setProgressState] = useState<ProgressState>("idle");
   const [isLoading, setIsLoading] = useState(false);
+  
+  // Settings state
+  const [showSettings, setShowSettings] = useState(false);
+  const [includeStories, setIncludeStories] = useState(false);
+  const [strictMode, setStrictMode] = useState(false);
 
 
   const handleUsernameChange = (event: ChangeEvent<HTMLInputElement>) => {
@@ -232,7 +252,9 @@ export default function App() {
       // Call the real API function
       const result = await searchUntilEmDash(
         trimmedUsername,
-        onProgressCallback
+        onProgressCallback,
+        includeStories,
+        strictMode
       );
 
       if (result.found) {
@@ -269,6 +291,11 @@ export default function App() {
   const componentSpecificStyles = `
   * {
     box-sizing: border-box;
+  }
+  @media (max-width: 768px) {
+    .main-heading {
+      font-size: 1.15rem !important;
+    }
   }
   @keyframes slideInFromBottom {
     from {
@@ -347,7 +374,7 @@ export default function App() {
     alignItems: "center",
     gap: "1rem",
     width: "100%",
-    maxWidth: "24rem",
+    maxWidth: "32rem",
   };
   const cardStyle: CSSProperties = {
     backgroundColor: themeColors.card,
@@ -461,7 +488,28 @@ export default function App() {
       <div style={pageStyle}>
         <div style={contentWrapperStyle}>
           <div style={cardStyle}>
-            <h1 style={headingStyle}>Did you em dash?</h1>
+            <div style={{ position: "relative" }}>
+              <h1 style={headingStyle} className="main-heading">
+                {strictMode ? "Did you actually em dash?" : "Did you em dash?"}
+              </h1>
+              <button
+                onClick={() => setShowSettings(true)}
+                style={{
+                  position: "absolute",
+                  top: "-0.25rem",
+                  right: "-0.5rem",
+                  background: "none",
+                  border: "none",
+                  color: themeColors.mutedForeground,
+                  fontSize: "0.75rem",
+                  cursor: "pointer",
+                  padding: "0.25rem",
+                  textDecoration: "underline",
+                }}
+              >
+                settings
+              </button>
+            </div>
             <form onSubmit={handleUsernameSubmit}>
               <div style={formGroupStyle}>
                 <input
@@ -652,6 +700,116 @@ export default function App() {
             </div>
           )}
         </div>
+        
+        {/* Settings Modal */}
+        {showSettings && (
+          <div
+            style={{
+              position: "fixed",
+              top: "0",
+              left: "0",
+              right: "0",
+              bottom: "0",
+              backgroundColor: "rgba(0, 0, 0, 0.5)",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              zIndex: 1000,
+            }}
+            onClick={() => setShowSettings(false)}
+          >
+            <div
+              style={{
+                backgroundColor: themeColors.card,
+                padding: "1.5rem",
+                borderRadius: borderRadius,
+                boxShadow: shadows.md,
+                width: "90%",
+                maxWidth: "400px",
+                border: `1px solid ${themeColors.border}`,
+              }}
+              onClick={(e) => e.stopPropagation()}
+            >
+              <h2 style={{
+                margin: "0 0 1rem 0",
+                fontSize: "1.25rem",
+                fontWeight: "600",
+                color: themeColors.cardForeground,
+              }}>
+                Search Settings
+              </h2>
+              
+              <div style={{ marginBottom: "1rem" }}>
+                <label style={{
+                  display: "flex",
+                  alignItems: "center",
+                  gap: "0.5rem",
+                  cursor: "pointer",
+                  fontSize: "0.875rem",
+                  color: themeColors.cardForeground,
+                }}>
+                  <input
+                    type="checkbox"
+                    checked={includeStories}
+                    onChange={(e) => setIncludeStories(e.target.checked)}
+                    style={{ marginRight: "0.25rem" }}
+                  />
+                  Include story titles
+                </label>
+                <p style={{
+                  fontSize: "0.75rem",
+                  color: themeColors.mutedForeground,
+                  margin: "0.25rem 0 0 1.5rem",
+                }}>
+                  Search story titles in addition to comments
+                </p>
+              </div>
+              
+              <div style={{ marginBottom: "1.5rem" }}>
+                <label style={{
+                  display: "flex",
+                  alignItems: "center",
+                  gap: "0.5rem",
+                  cursor: "pointer",
+                  fontSize: "0.875rem",
+                  color: themeColors.cardForeground,
+                }}>
+                  <input
+                    type="checkbox"
+                    checked={strictMode}
+                    onChange={(e) => setStrictMode(e.target.checked)}
+                    style={{ marginRight: "0.25rem" }}
+                  />
+                  Strict mode
+                </label>
+                <p style={{
+                  fontSize: "0.75rem",
+                  color: themeColors.mutedForeground,
+                  margin: "0.25rem 0 0 1.5rem",
+                }}>
+                  Only match true em dashes (—), not lazy dashes (--)
+                </p>
+              </div>
+              
+              <button
+                onClick={() => setShowSettings(false)}
+                style={{
+                  width: "100%",
+                  padding: "0.5rem 1rem",
+                  backgroundColor: themeColors.primary,
+                  color: themeColors.primaryForeground,
+                  border: "none",
+                  borderRadius: borderRadius,
+                  cursor: "pointer",
+                  fontSize: "0.875rem",
+                  fontWeight: "500",
+                }}
+              >
+                Close
+              </button>
+            </div>
+          </div>
+        )}
         
         {/* Spacer */}
         <div style={{ height: "3rem" }}></div>
