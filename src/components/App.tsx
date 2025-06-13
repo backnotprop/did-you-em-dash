@@ -216,7 +216,7 @@ export default function App() {
   const [strictMode, setStrictMode] = useState(false);
 
   const performSearch = useCallback(
-    async (searchUsername: string) => {
+    async (searchUsername: string, overrideStrictMode?: boolean, overrideIncludeStories?: boolean) => {
       const trimmedUsername = searchUsername.trim();
 
       if (!USERNAME_REGEX.test(trimmedUsername)) {
@@ -241,12 +241,16 @@ export default function App() {
           setProgressState(newState);
         };
 
+        // Use override values if provided, otherwise use current state
+        const searchStrictMode = overrideStrictMode !== undefined ? overrideStrictMode : strictMode;
+        const searchIncludeStories = overrideIncludeStories !== undefined ? overrideIncludeStories : includeStories;
+
         // Call the real API function
         const result = await searchUntilEmDash(
           trimmedUsername,
           onProgressCallback,
-          includeStories,
-          strictMode
+          searchIncludeStories,
+          searchStrictMode
         );
 
         if (result.found) {
@@ -273,8 +277,11 @@ export default function App() {
     const usernameParam = urlParams.get("username");
     const strictParam = urlParams.get("strict");
 
+    // Parse strict mode parameter
+    const isStrictMode = strictParam === "true" || strictParam === "1";
+    
     // Set strict mode if parameter is present and truthy
-    if (strictParam === "true" || strictParam === "1") {
+    if (isStrictMode) {
       setStrictMode(true);
     }
 
@@ -282,12 +289,56 @@ export default function App() {
       const trimmedUsername = usernameParam.trim();
       setUsername(trimmedUsername);
 
+      // Define a one-time search function that uses the parsed parameters directly
+      const performInitialSearch = async () => {
+        if (!USERNAME_REGEX.test(trimmedUsername)) {
+          setUsernameError(
+            "Invalid username. Must be 2-15 alphanumeric characters, underscores, or hyphens."
+          );
+          return;
+        }
+
+        setUsernameError("");
+        setErrorMessage("");
+        setIsLoading(true);
+        setProgressState("retrieving");
+        setFoundItem(null);
+        setMatchedText("");
+
+        try {
+          const onProgressCallback: ProgressCallback = (newState) => {
+            setProgressState(newState);
+          };
+
+          const result = await searchUntilEmDash(
+            trimmedUsername,
+            onProgressCallback,
+            false, // includeStories - use default for URL searches
+            isStrictMode // Use parsed strict mode value
+          );
+
+          if (result.found) {
+            setProgressState("found");
+            setFoundItem(result.item || null);
+            setMatchedText(result.matchedText || "");
+          } else {
+            setProgressState("failed");
+          }
+        } catch (error: any) {
+          console.error("Caught error in URL search:", error);
+          setErrorMessage(error.message || "An unknown error occurred.");
+          setProgressState("error");
+        } finally {
+          setIsLoading(false);
+        }
+      };
+
       // Auto-submit after a short delay to ensure the component is fully rendered
       setTimeout(() => {
-        performSearch(trimmedUsername);
+        performInitialSearch();
       }, 100);
     }
-  }, [performSearch]);
+  }, []); // Empty dependency array - only run once on mount
 
   const handleUsernameChange = (event: ChangeEvent<HTMLInputElement>) => {
     const newUsername = event.target.value;
