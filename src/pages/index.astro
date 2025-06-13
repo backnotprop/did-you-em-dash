@@ -5,13 +5,63 @@ import App from '../components/App.tsx';
 <html lang="en">
 	<head>
 		<meta charset="utf-8" />
+		<meta name="viewport" content="width=device-width" />
+		<meta name="generator" content={Astro.generator} />
+		
+		<!-- SEO Meta Tags -->
+		<title>Did You Em Dash? | Prove Your Pre-ChatGPT Writing Style | Hacker News Analyzer</title>
+		<meta name="description" content="Analyze your Hacker News submissions from before November 2022 to prove you used em dashes before ChatGPT. Counter AI detection claims with evidence of your authentic writing patterns." />
+		<meta name="keywords" content="em dash, AI detection, ChatGPT, Hacker News, writing analysis, AI writing detector, em dash analyzer, pre-ChatGPT writing, authentic writing style" />
+		<meta name="robots" content="index, follow" />
+		<link rel="canonical" href="https://didyouemdash.com/" />
+		
+		<!-- Open Graph Tags -->
+		<meta property="og:title" content="Did You Em Dash? | Prove Your Pre-ChatGPT Writing Style" />
+		<meta property="og:description" content="Analyze your Hacker News submissions from before November 2022 to prove you used em dashes before ChatGPT. Counter AI detection claims with evidence." />
+		<meta property="og:type" content="website" />
+		<meta property="og:url" content="https://didyouemdash.com/" />
+		<meta property="og:site_name" content="Did You Em Dash?" />
+		
+		<!-- Twitter Card Tags -->
+		<meta name="twitter:card" content="summary" />
+		<meta name="twitter:site" content="@DidYouEmDash" />
+		<meta name="twitter:title" content="Did You Em Dash? | Prove Your Pre-ChatGPT Writing Style" />
+		<meta name="twitter:description" content="Analyze your Hacker News submissions to prove you used em dashes before ChatGPT. Counter AI detection claims with evidence." />
+		
+		<!-- Favicons -->
 		<link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
 		<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png" />
 		<link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png" />
 		<link rel="manifest" href="/site.webmanifest" />
-		<meta name="viewport" content="width=device-width" />
-		<meta name="generator" content={Astro.generator} />
-		<title>Did you em dash?</title>
+		
+		<!-- JSON-LD Structured Data -->
+		<script type="application/ld+json">
+		{
+			"@context": "https://schema.org",
+			"@type": "WebApplication",
+			"name": "Did You Em Dash?",
+			"description": "Analyze Hacker News submissions from before November 2022 to prove em dash usage before ChatGPT",
+			"url": "https://didyouemdash.com/",
+			"applicationCategory": "UtilityApplication",
+			"operatingSystem": "Web Browser",
+			"offers": {
+				"@type": "Offer",
+				"price": "0",
+				"priceCurrency": "USD"
+			},
+			"author": {
+				"@type": "Person",
+				"name": "backnotprop"
+			},
+			"featureList": [
+				"Hacker News submission analysis",
+				"Pre-ChatGPT writing pattern detection",
+				"Em dash usage verification",
+				"AI detection counter-evidence",
+				"Temporal content filtering"
+			]
+		}
+		</script>
 		<style>
 			body {
 				margin: 0;

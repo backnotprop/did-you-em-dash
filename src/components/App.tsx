@@ -307,6 +307,14 @@ export default function App() {
     });
   };
 
+  // Function to handle X (Twitter) sharing
+  const handleShareToX = () => {
+    const shareUrl = `https://didyouemdash.com/?username=${encodeURIComponent(username)}`;
+    const tweetText = `I em dashed before AI, verified by @DidYouEmDash ${shareUrl}`;
+    const xUrl = `https://twitter.com/intent/tweet?text=${encodeURIComponent(tweetText)}`;
+    window.open(xUrl, '_blank', 'noopener,noreferrer');
+  };
+
   // Function to create markup for HTML content
   const createMarkup = (htmlContent: string) => {
     return { __html: htmlContent };
@@ -752,6 +760,34 @@ export default function App() {
                   ) : null}
                 </div>
               )}
+              
+              {/* Share button for success - placed after HN post card */}
+              {progressState === "found" && (
+                <button
+                  onClick={handleShareToX}
+                  style={{
+                    marginTop: "1rem",
+                    padding: "0.5rem 1rem",
+                    backgroundColor: "#1DA1F2",
+                    color: "white",
+                    border: "none",
+                    borderRadius: borderRadius,
+                    cursor: "pointer",
+                    fontSize: "0.875rem",
+                    fontWeight: "600",
+                    boxShadow: shadows.sm,
+                    transition: "background-color 0.2s ease",
+                  }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.backgroundColor = "#1991DA";
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.backgroundColor = "#1DA1F2";
+                  }}
+                >
+                  Share proof on X
+                </button>
+              )}
             </div>
           )}
         </div>
@@ -771,6 +807,9 @@ export default function App() {
           width: "100%",
           maxWidth: "24rem",
         }}>
+          <div style={{ marginBottom: "0.5rem", fontSize: "0.6875rem", opacity: 0.8 }}>
+            Prove which HN users used em dashes before ChatGPT
+          </div>
           <a 
             href="https://x.com/DidYouEmDash" 
             target="_blank" 
@@ -782,7 +821,15 @@ export default function App() {
           {" | "}
           <span>HN API by Firebase</span>
           {" | "}
-          <span>© backnotprop</span>
+          <span>by </span>
+          <a 
+            href="https://github.com/backnotprop/did-you-em-dash" 
+            target="_blank" 
+            rel="noopener noreferrer"
+            style={{ color: themeColors.primary, textDecoration: "underline" }}
+          >
+            backnotprop
+          </a>
         </footer>
       </div>
     </>
