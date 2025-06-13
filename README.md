@@ -1,47 +1,36 @@
-# Astro Starter Kit: Minimal
+# Did You Em Dash?
 
-```sh
-npm create astro@latest -- --template minimal
-```
+[![didyouemdash.com](https://img.shields.io/badge/didyouemdash.com-Try%20the%20Tool-blue?style=for-the-badge)](https://didyouemdash.com)
 
-[![Open in StackBlitz](https://developer.stackblitz.com/img/open_in_stackblitz.svg)](https://stackblitz.com/github/withastro/astro/tree/latest/examples/minimal)
-[![Open with CodeSandbox](https://assets.codesandbox.io/github/button-edit-lime.svg)](https://codesandbox.io/p/sandbox/github/withastro/astro/tree/latest/examples/minimal)
-[![Open in GitHub Codespaces](https://github.com/codespaces/badge.svg)](https://codespaces.new/withastro/astro?devcontainer_path=.devcontainer/minimal/devcontainer.json)
+**Prove you used em dashes before ChatGPT with this Hacker News submission analyzer.**
 
-> 🧑‍🚀 **Seasoned astronaut?** Delete this file. Have fun!
+A tool to search your pre-2022 Hacker News submissions for em dash usage patterns.
 
-## 🚀 Project Structure
+## Overview
 
-Inside of your Astro project, you'll see the following folders and files:
+Some social media users claim that frequent em dash usage indicates AI-generated text. This tool searches your Hacker News submissions from before November 30, 2022 to demonstrate your pre-ChatGPT writing patterns.
 
-```text
-/
-├── public/
-├── src/
-│   └── pages/
-│       └── index.astro
-└── package.json
-```
+The application analyzes your public Hacker News comments and story titles for em dash patterns, providing evidence of your authentic writing style before widespread AI adoption.
 
-Astro looks for `.astro` or `.md` files in the `src/pages/` directory. Each page is exposed as a route based on its file name.
+## How It Works
 
-There's nothing special about `src/components/`, but that's where we like to put any Astro/React/Vue/Svelte/Preact components.
+1. Enter your Hacker News username
+2. Choose search settings (strict em dash matching, include story titles)
+3. The tool searches your submissions chronologically from oldest to newest
+4. Results show the first instance of em dash usage with a link to the original post
 
-Any static assets, like images, can be placed in the `public/` directory.
+### Search Modes
 
-## 🧞 Commands
+**Loose Mode**: Matches various dash types including `--`, `––`, `——`, `–`, and `—`
 
-All commands are run from the root of the project, from a terminal:
+**Strict Mode**: Only matches true em dashes (`—`)
 
-| Command                   | Action                                           |
-| :------------------------ | :----------------------------------------------- |
-| `npm install`             | Installs dependencies                            |
-| `npm run dev`             | Starts local dev server at `localhost:4321`      |
-| `npm run build`           | Build your production site to `./dist/`          |
-| `npm run preview`         | Preview your build locally, before deploying     |
-| `npm run astro ...`       | Run CLI commands like `astro add`, `astro check` |
-| `npm run astro -- --help` | Get help using the Astro CLI                     |
+**Content Types**: Search comments only (default) or include story titles
 
-## 👀 Want to learn more?
+## URL Parameters
 
-Feel free to check [our documentation](https://docs.astro.build) or jump into our [Discord server](https://astro.build/chat).
+Share your results with query parameters:
+
+- `?username=yourname` - Auto-populate username field
+- `?strict=true` - Enable strict em dash mode
+- `?username=pg&strict=true` - Combined parameters
