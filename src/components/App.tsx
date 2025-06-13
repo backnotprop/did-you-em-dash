@@ -4,6 +4,8 @@
  */
 import React, { useState, useEffect, useCallback } from "react";
 import type { ChangeEvent, FormEvent, CSSProperties } from "react";
+import ggImage from "../assets/gg.png";
+import tlImage from "../assets/tl.png";
 
 // --- API LOGIC ---
 
@@ -71,11 +73,11 @@ export const searchUntilEmDash = async (
     }
 
     const userData = await userResponse.json();
-    
+
     if (!userData) {
       throw new Error(`User data not found for '${username}'.`);
     }
-    
+
     const submissionIds: number[] = userData.submitted || [];
 
     if (submissionIds.length === 0) {
@@ -114,13 +116,19 @@ export const searchUntilEmDash = async (
         if (!includeStories && item.type !== "comment") {
           return;
         }
-        if (includeStories && item.type !== "comment" && item.type !== "story") {
+        if (
+          includeStories &&
+          item.type !== "comment" &&
+          item.type !== "story"
+        ) {
           return;
         }
 
         const textToSearch = item.text || item.title || "";
-        const emDashRegex = strictMode ? STRICT_EM_DASH_REGEX : LOOSE_EM_DASH_REGEX;
-        
+        const emDashRegex = strictMode
+          ? STRICT_EM_DASH_REGEX
+          : LOOSE_EM_DASH_REGEX;
+
         if (emDashRegex.test(textToSearch)) {
           if (!foundEmDash) {
             // Only store the first found item
@@ -202,75 +210,78 @@ export default function App() {
 
   const [progressState, setProgressState] = useState<ProgressState>("idle");
   const [isLoading, setIsLoading] = useState(false);
-  
+
   // Settings state
   const [includeStories, setIncludeStories] = useState(false);
   const [strictMode, setStrictMode] = useState(false);
 
-  const performSearch = useCallback(async (searchUsername: string) => {
-    const trimmedUsername = searchUsername.trim();
+  const performSearch = useCallback(
+    async (searchUsername: string) => {
+      const trimmedUsername = searchUsername.trim();
 
-    if (!USERNAME_REGEX.test(trimmedUsername)) {
-      setUsernameError(
-        "Invalid username. Must be 2-15 alphanumeric characters, underscores, or hyphens."
-      );
-      setProgressState("idle");
-      setIsLoading(false);
-      return;
-    }
-
-    setUsernameError("");
-    setErrorMessage("");
-    setIsLoading(true);
-    setProgressState("retrieving"); // Initial state after submission
-    setFoundItem(null);
-    setMatchedText("");
-
-    try {
-      // Define the callback function that the API client will use to update our state
-      const onProgressCallback: ProgressCallback = (newState) => {
-        setProgressState(newState);
-      };
-
-      // Call the real API function
-      const result = await searchUntilEmDash(
-        trimmedUsername,
-        onProgressCallback,
-        includeStories,
-        strictMode
-      );
-
-      if (result.found) {
-        setProgressState("found");
-        setFoundItem(result.item || null);
-        setMatchedText(result.matchedText || "");
-      } else {
-        setProgressState("failed");
+      if (!USERNAME_REGEX.test(trimmedUsername)) {
+        setUsernameError(
+          "Invalid username. Must be 2-15 alphanumeric characters, underscores, or hyphens."
+        );
+        setProgressState("idle");
+        setIsLoading(false);
+        return;
       }
-    } catch (error: any) {
-      console.error("Caught error in UI:", error);
-      setErrorMessage(error.message || "An unknown error occurred.");
-      setProgressState("error");
-    } finally {
-      setIsLoading(false); // Process finished
-    }
-  }, [includeStories, strictMode]);
+
+      setUsernameError("");
+      setErrorMessage("");
+      setIsLoading(true);
+      setProgressState("retrieving"); // Initial state after submission
+      setFoundItem(null);
+      setMatchedText("");
+
+      try {
+        // Define the callback function that the API client will use to update our state
+        const onProgressCallback: ProgressCallback = (newState) => {
+          setProgressState(newState);
+        };
+
+        // Call the real API function
+        const result = await searchUntilEmDash(
+          trimmedUsername,
+          onProgressCallback,
+          includeStories,
+          strictMode
+        );
+
+        if (result.found) {
+          setProgressState("found");
+          setFoundItem(result.item || null);
+          setMatchedText(result.matchedText || "");
+        } else {
+          setProgressState("failed");
+        }
+      } catch (error: any) {
+        console.error("Caught error in UI:", error);
+        setErrorMessage(error.message || "An unknown error occurred.");
+        setProgressState("error");
+      } finally {
+        setIsLoading(false); // Process finished
+      }
+    },
+    [includeStories, strictMode]
+  );
 
   // Parse URL query parameters and auto-submit on mount
   useEffect(() => {
     const urlParams = new URLSearchParams(window.location.search);
-    const usernameParam = urlParams.get('username');
-    const strictParam = urlParams.get('strict');
-    
+    const usernameParam = urlParams.get("username");
+    const strictParam = urlParams.get("strict");
+
     // Set strict mode if parameter is present and truthy
-    if (strictParam === 'true' || strictParam === '1') {
+    if (strictParam === "true" || strictParam === "1") {
       setStrictMode(true);
     }
-    
+
     if (usernameParam && USERNAME_REGEX.test(usernameParam.trim())) {
       const trimmedUsername = usernameParam.trim();
       setUsername(trimmedUsername);
-      
+
       // Auto-submit after a short delay to ensure the component is fully rendered
       setTimeout(() => {
         performSearch(trimmedUsername);
@@ -309,11 +320,15 @@ export default function App() {
 
   // Function to handle X (Twitter) sharing
   const handleShareToX = () => {
-    const shareUrl = `https://didyouemdash.com/?username=${encodeURIComponent(username)}${strictMode ? '&strict=true' : ''}`;
-    const actuallyText = strictMode ? ' ACTUALLY' : '';
+    const shareUrl = `https://didyouemdash.com/?username=${encodeURIComponent(
+      username
+    )}${strictMode ? "&strict=true" : ""}`;
+    const actuallyText = strictMode ? " ACTUALLY" : "";
     const tweetText = `I${actuallyText} em dashed before AI, verified by @DidYouEmDash ${shareUrl}`;
-    const xUrl = `https://twitter.com/intent/tweet?text=${encodeURIComponent(tweetText)}`;
-    window.open(xUrl, '_blank', 'noopener,noreferrer');
+    const xUrl = `https://twitter.com/intent/tweet?text=${encodeURIComponent(
+      tweetText
+    )}`;
+    window.open(xUrl, "_blank", "noopener,noreferrer");
   };
 
   // Function to create markup for HTML content
@@ -493,6 +508,8 @@ export default function App() {
     objectFit: "contain",
     borderRadius: borderRadius,
     boxShadow: shadows.sm,
+    imageRendering: "auto",
+    filter: "blur(0.35px)",
   };
   const resultTextStyle: CSSProperties = {
     marginTop: "1rem",
@@ -521,11 +538,13 @@ export default function App() {
             </h1>
             <form onSubmit={handleUsernameSubmit}>
               <div style={formGroupStyle}>
-                <div style={{
-                  position: "relative",
-                  display: "flex",
-                  alignItems: "center",
-                }}>
+                <div
+                  style={{
+                    position: "relative",
+                    display: "flex",
+                    alignItems: "center",
+                  }}
+                >
                   <input
                     id="usernameInput"
                     type="text"
@@ -538,13 +557,15 @@ export default function App() {
                     }}
                     disabled={isLoading}
                   />
-                  <div style={{
-                    position: "absolute",
-                    right: "0.5rem",
-                    display: "flex",
-                    gap: "0.25rem",
-                    alignItems: "center",
-                  }}>
+                  <div
+                    style={{
+                      position: "absolute",
+                      right: "0.5rem",
+                      display: "flex",
+                      gap: "0.25rem",
+                      alignItems: "center",
+                    }}
+                  >
                     <button
                       type="button"
                       onClick={() => setStrictMode(!strictMode)}
@@ -555,8 +576,12 @@ export default function App() {
                         border: "none",
                         cursor: "pointer",
                         fontWeight: "500",
-                        backgroundColor: strictMode ? themeColors.primary : themeColors.mutedForeground,
-                        color: strictMode ? themeColors.primaryForeground : themeColors.background,
+                        backgroundColor: strictMode
+                          ? themeColors.primary
+                          : themeColors.mutedForeground,
+                        color: strictMode
+                          ? themeColors.primaryForeground
+                          : themeColors.background,
                         opacity: strictMode ? 1 : 0.6,
                         transition: "all 0.2s ease",
                       }}
@@ -574,8 +599,12 @@ export default function App() {
                         border: "none",
                         cursor: "pointer",
                         fontWeight: "500",
-                        backgroundColor: includeStories ? themeColors.primary : themeColors.mutedForeground,
-                        color: includeStories ? themeColors.primaryForeground : themeColors.background,
+                        backgroundColor: includeStories
+                          ? themeColors.primary
+                          : themeColors.mutedForeground,
+                        color: includeStories
+                          ? themeColors.primaryForeground
+                          : themeColors.background,
                         opacity: includeStories ? 1 : 0.6,
                         transition: "all 0.2s ease",
                       }}
@@ -660,17 +689,21 @@ export default function App() {
 
                 if (!isVisible) return null;
 
-                const isLoading = (progressState === "retrieving" && step.id === "retrieving") || 
-                                 (progressState === "searching" && step.id === "searching");
+                const isLoading =
+                  (progressState === "retrieving" &&
+                    step.id === "retrieving") ||
+                  (progressState === "searching" && step.id === "searching");
 
                 return (
                   <div key={step.id} style={progressStepItemStyle}>
-                    <span role="img" style={iconStyle} className={isLoading ? "loading-dots" : ""}>
+                    <span
+                      role="img"
+                      style={iconStyle}
+                      className={isLoading ? "loading-dots" : ""}
+                    >
                       {iconChar}
                     </span>
-                    <p style={currentTextStyle}>
-                      {currentText}
-                    </p>
+                    <p style={currentTextStyle}>{currentText}</p>
                   </div>
                 );
               })}
@@ -681,13 +714,21 @@ export default function App() {
           {(progressState === "found" || progressState === "failed") && (
             <div className="slide-in" style={resultCardStyle}>
               <img
-                src={progressState === "found" ? "./gg.png" : "./tl.png"}
+                src={progressState === "found" ? ggImage.src : tlImage.src}
+                width={
+                  progressState === "found" ? ggImage.width : tlImage.width
+                }
+                height={
+                  progressState === "found" ? ggImage.height : tlImage.height
+                }
                 alt={
                   progressState === "found"
                     ? "Success confirmation"
                     : "Failure confirmation"
                 }
                 style={resultImageStyle}
+                loading="eager"
+                decoding="sync"
               />
               <p
                 style={{
@@ -721,11 +762,14 @@ export default function App() {
                   <div className="post-date">{formatDate(foundItem.time)}</div>
                   {foundItem.title && (
                     <h3 style={{ marginBottom: "0.5rem" }}>
-                      <a 
+                      <a
                         href={`https://news.ycombinator.com/item?id=${foundItem.id}`}
                         target="_blank"
                         rel="noopener noreferrer"
-                        style={{ color: themeColors.primary, textDecoration: "none" }}
+                        style={{
+                          color: themeColors.primary,
+                          textDecoration: "none",
+                        }}
                       >
                         {foundItem.title}
                       </a>
@@ -737,7 +781,7 @@ export default function App() {
                         dangerouslySetInnerHTML={createMarkup(foundItem.text)}
                       />
                       <p style={{ marginTop: "0.75rem", fontSize: "0.875rem" }}>
-                        <a 
+                        <a
                           href={`https://news.ycombinator.com/item?id=${foundItem.id}`}
                           target="_blank"
                           rel="noopener noreferrer"
@@ -749,7 +793,7 @@ export default function App() {
                     </div>
                   ) : foundItem.title ? (
                     <p>
-                      <a 
+                      <a
                         href={`https://news.ycombinator.com/item?id=${foundItem.id}`}
                         target="_blank"
                         rel="noopener noreferrer"
@@ -761,7 +805,7 @@ export default function App() {
                   ) : null}
                 </div>
               )}
-              
+
               {/* Share button for success - placed after HN post card */}
               {progressState === "found" && (
                 <button
@@ -792,40 +836,48 @@ export default function App() {
             </div>
           )}
         </div>
-        
+
         {/* Spacer */}
         <div style={{ height: "3rem" }}></div>
-        
+
         {/* Footer */}
-        <footer style={{
-          marginTop: "auto",
-          paddingTop: "2rem",
-          padding: "1rem",
-          fontSize: "0.75rem",
-          color: themeColors.mutedForeground,
-          textAlign: "center",
-          borderTop: `1px solid ${themeColors.border}`,
-          width: "100%",
-          maxWidth: "24rem",
-        }}>
-          <div style={{ marginBottom: "0.5rem", fontSize: "0.6875rem", opacity: 0.8 }}>
+        <footer
+          style={{
+            marginTop: "auto",
+            paddingTop: "2rem",
+            padding: "1rem",
+            fontSize: "0.75rem",
+            color: themeColors.mutedForeground,
+            textAlign: "center",
+            borderTop: `1px solid ${themeColors.border}`,
+            width: "100%",
+            maxWidth: "24rem",
+          }}
+        >
+          <div
+            style={{
+              marginBottom: "0.5rem",
+              fontSize: "0.6875rem",
+              opacity: 0.8,
+            }}
+          >
             Prove which HN users used em dashes before ChatGPT
           </div>
-          <a 
-            href="https://x.com/DidYouEmDash" 
-            target="_blank" 
+          <a
+            href="https://x.com/DidYouEmDash"
+            target="_blank"
             rel="noopener noreferrer"
             style={{ color: themeColors.primary, textDecoration: "underline" }}
           >
             @DidYouEmDash
           </a>
-          {" | "}
+          {" – "}
           <span>HN API by Firebase</span>
-          {" | "}
-          <span>by </span>
-          <a 
-            href="https://github.com/backnotprop/did-you-em-dash" 
-            target="_blank" 
+          {" – "}
+          <span>app by </span>
+          <a
+            href="https://github.com/backnotprop/did-you-em-dash"
+            target="_blank"
             rel="noopener noreferrer"
             style={{ color: themeColors.primary, textDecoration: "underline" }}
           >
