@@ -2,7 +2,7 @@
  * @license
  * @copyright Michael Ramos, backnotprop
  */
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import type { ChangeEvent, FormEvent, CSSProperties } from "react";
 
 // --- API LOGIC ---
@@ -207,24 +207,8 @@ export default function App() {
   const [includeStories, setIncludeStories] = useState(false);
   const [strictMode, setStrictMode] = useState(false);
 
-
-  const handleUsernameChange = (event: ChangeEvent<HTMLInputElement>) => {
-    const newUsername = event.target.value;
-    setUsername(newUsername);
-    setUsernameError("");
-    setErrorMessage("");
-    // Reset the entire UI if user types in the input after a run is complete.
-    if (progressState !== "idle") {
-      setProgressState("idle");
-      setIsLoading(false);
-      setFoundItem(null);
-      setMatchedText("");
-    }
-  };
-
-  const handleUsernameSubmit = async (event: FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
-    const trimmedUsername = username.trim();
+  const performSearch = useCallback(async (searchUsername: string) => {
+    const trimmedUsername = searchUsername.trim();
 
     if (!USERNAME_REGEX.test(trimmedUsername)) {
       setUsernameError(
@@ -270,6 +254,47 @@ export default function App() {
     } finally {
       setIsLoading(false); // Process finished
     }
+  }, [includeStories, strictMode]);
+
+  // Parse URL query parameters and auto-submit on mount
+  useEffect(() => {
+    const urlParams = new URLSearchParams(window.location.search);
+    const usernameParam = urlParams.get('username');
+    const strictParam = urlParams.get('strict');
+    
+    // Set strict mode if parameter is present and truthy
+    if (strictParam === 'true' || strictParam === '1') {
+      setStrictMode(true);
+    }
+    
+    if (usernameParam && USERNAME_REGEX.test(usernameParam.trim())) {
+      const trimmedUsername = usernameParam.trim();
+      setUsername(trimmedUsername);
+      
+      // Auto-submit after a short delay to ensure the component is fully rendered
+      setTimeout(() => {
+        performSearch(trimmedUsername);
+      }, 100);
+    }
+  }, [performSearch]);
+
+  const handleUsernameChange = (event: ChangeEvent<HTMLInputElement>) => {
+    const newUsername = event.target.value;
+    setUsername(newUsername);
+    setUsernameError("");
+    setErrorMessage("");
+    // Reset the entire UI if user types in the input after a run is complete.
+    if (progressState !== "idle") {
+      setProgressState("idle");
+      setIsLoading(false);
+      setFoundItem(null);
+      setMatchedText("");
+    }
+  };
+
+  const handleUsernameSubmit = async (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    await performSearch(username);
   };
 
   // Function to format date
