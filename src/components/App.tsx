@@ -309,8 +309,9 @@ export default function App() {
 
   // Function to handle X (Twitter) sharing
   const handleShareToX = () => {
-    const shareUrl = `https://didyouemdash.com/?username=${encodeURIComponent(username)}`;
-    const tweetText = `I em dashed before AI, verified by @DidYouEmDash ${shareUrl}`;
+    const shareUrl = `https://didyouemdash.com/?username=${encodeURIComponent(username)}${strictMode ? '&strict=true' : ''}`;
+    const actuallyText = strictMode ? ' ACTUALLY' : '';
+    const tweetText = `I${actuallyText} em dashed before AI, verified by @DidYouEmDash ${shareUrl}`;
     const xUrl = `https://twitter.com/intent/tweet?text=${encodeURIComponent(tweetText)}`;
     window.open(xUrl, '_blank', 'noopener,noreferrer');
   };
