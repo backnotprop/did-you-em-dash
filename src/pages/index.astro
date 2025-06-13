@@ -1,5 +1,5 @@
 ---
-
+import App from '../components/App.tsx';
 ---
 
 <html lang="en">
@@ -8,9 +8,17 @@
 		<link rel="icon" type="image/svg+xml" href="/favicon.svg" />
 		<meta name="viewport" content="width=device-width" />
 		<meta name="generator" content={Astro.generator} />
-		<title>Astro</title>
+		<title>Did you em dash?</title>
+		<style>
+			body {
+				margin: 0;
+				padding: 0;
+				background-color: #f5f5f5;
+				min-height: 100vh;
+			}
+		</style>
 	</head>
 	<body>
-		<h1>Astro</h1>
+		<App client:load />
 	</body>
 </html>
